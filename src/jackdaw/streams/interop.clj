@@ -24,7 +24,9 @@
             Suppressed Suppressed$BufferConfig TimeWindowedKStream ValueJoiner
             ValueMapper ValueMapperWithKey ValueTransformerSupplier Windows]
            [org.apache.kafka.streams.processor
-            StreamPartitioner]))
+            StreamPartitioner TopicNameExtractor RecordContext]
+           [org.apache.kafka.common.header
+            Header Headers]))
 
 (set! *warn-on-reflection* true)
 
@@ -61,6 +63,37 @@
       (Suppressed/untilTimeLimit (Duration/ofMillis time-limit) config)
       (-> (.shutDownWhenFull ^Suppressed$BufferConfig config)
           Suppressed/untilWindowCloses))))
+
+(defn header->clj
+  [^Header header]
+  (if-some [value (.value header)]
+    [(.key header) value]
+    [(.key header)]))
+
+(defn headers->clj
+  [^Headers headers]
+  (not-empty
+   (map header->clj (.toArray headers))))
+
+(defn record-context->clj
+  [^RecordContext rc]
+  {:headers (header->clj (.headers rc))
+   :offset (let [offset (.offset rc)]
+             (when (nat-int? offset)
+               offset))
+   :timestamp (let [timestamp (.timestamp rc)]
+                (when (nat-int? timestamp)
+                  timestamp))
+   :partition (let [partition (.partition rc)]
+                (when (nat-int? partition)
+                  partition))
+   :topic (.topic rc)})
+
+(defn fn->topic-name-extractor [f]
+  ^TopicNameExtractor
+  (reify TopicNameExtractor
+    (extract [_ k v record-context]
+      (f k v (record-context->clj record-context)))))
 
 (declare clj-kstream clj-ktable clj-kgroupedtable clj-kgroupedstream
          clj-global-ktable clj-session-windowed-kstream
@@ -219,7 +252,13 @@
 
   (to!
     [_ {:keys [topic-name] :as topic-config}]
-    (.to kstream ^String topic-name ^Produced (topic->produced topic-config))
+    (.to kstream
+         (cond
+           (instance? String topic-name) ^String topic-name
+           (fn? topic-name) (fn->topic-name-extractor topic-name)
+           :else (throw (ex-info "`:topic-name` must be either a String or a clojure function."
+                                 topic-config)))
+         ^Produced (topic->produced topic-config))
     nil)
 
   (flat-map-values
