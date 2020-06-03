@@ -6,6 +6,8 @@
 
 ### Fixed
 
+* Allow map with keyword keys in streams constructor.
+
 ## [0.7.5] - [2020-07-02] 
 
 ### Fixed
@@ -16,7 +18,7 @@
 
 ### Fixed
 
-* Fix `ktable` constructor to use supplied `store-name` 
+* Fix `ktable` constructor to use supplied `store-name`
 
 * Bump `clj-uuid` version to `0.1.9`
 
