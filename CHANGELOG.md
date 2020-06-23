@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* Override the netty version pulled by Aleph with one which fixes https://nvd.nist.gov/vuln/detail/CVE-2020-11612 
 * Fix `ktable` constructor to use supplied `store-name` 
 
 * Bump `clj-uuid` version to `0.1.9`
