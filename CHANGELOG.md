@@ -4,6 +4,8 @@
 
 ### Added
 
+* Allow schema-registry client constructor to receive additional config parameters
+
 ### Fixed
 
 * Allow map with keyword keys in streams constructor.
