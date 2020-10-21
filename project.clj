@@ -1,9 +1,9 @@
-(defproject fundingcircle/jackdaw "_"
+(defproject dakra/jackdaw "_"
   :description "A Clojure library for the Apache Kafka distributed streaming platform."
 
-  :scm {:name "git" :url "https://github.com/fundingcircle/jackdaw"}
+  :scm {:name "git" :url "https://github.com/dakra/jackdaw"}
 
-  :url "https://github.com/FundingCircle/jackdaw/"
+  :url "https://github.com/dakra/jackdaw/"
 
   :repositories [["confluent" {:url "https://packages.confluent.io/maven/"}]]
 
@@ -49,7 +49,7 @@
 
              ;; Define a profile intended to be shared by this project and its children
              :shared
-             {:url "https://github.com/FundingCircle/jackdaw"
+             {:url "https://github.com/dakra/jackdaw"
               :license {:name "BSD 3-clause"
                         :url "http://opensource.org/licenses/BSD-3-Clause"}
               :repositories
@@ -57,10 +57,7 @@
                 "https://packages.confluent.io/maven/"]]
 
               :deploy-repositories
-              [["clojars" {:url "https://clojars.org/repo/"
-                           :username :env/clojars_username
-                           :password :env/clojars_password
-                           :signing {:gpg-key "fundingcirclebot@fundingcircle.com"}}]]}
+              [["clojars" {:url "https://clojars.org/repo/"}]]}
 
              ;; The dev profile - non-deployment configuration
              :dev
