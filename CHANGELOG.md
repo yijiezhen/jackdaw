@@ -4,7 +4,10 @@
 
 ### Added
 
- * Allow additional schema-registry client configuration to be passed to:
+ * Upgrade to Kafka 2.4.1 #270
+ * Allow usage of the topic name extractor in the `to` function #57
+ * Allow additional schema-registry client configuration to be
+   passed to: #265
    * jackdaw.serdes.avro.schema-registry/client
    * jackdaw.serdes.resolver/serde-resolver
    * jackdaw.serdes.avro.confluent/serde
@@ -12,9 +15,10 @@
 
 ### Fixed
 
-* Allow map with keyword keys in streams constructor.
+* Fix inability to materialize without supplying a topic name #263
+* Allow map with keyword keys in streams constructor #253
 
-## [0.7.5] - [2020-07-02] 
+## [0.7.5] - [2020-07-02]
 
 ### Fixed
 
