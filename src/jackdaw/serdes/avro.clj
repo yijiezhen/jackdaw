@@ -505,7 +505,7 @@
   {"schema.registry.url" registry-url})
 
 (defn- serializer [schema->coercion serde-config]
-  (let [{:keys [registry-client registry-config avro-schema read-only? key?]} serde-config
+  (let [{:keys [registry-client registry-url avro-schema read-only? key?]} serde-config
         base-serializer (KafkaAvroSerializer. registry-client)
         ;; This is invariant across subject schema changes, shockingly.
         coercion-type (schema->coercion avro-schema)
@@ -525,13 +525,14 @@
                                                  (assoc :topic topic :clj-data data))]
                                     (throw (ex-info (.getMessage e) data))))))}
         clj-serializer (fn/new-serializer methods)]
-    (.configure ^Serializer clj-serializer registry-config key?)
+    (.configure ^Serializer clj-serializer (base-config registry-url) key?)
     clj-serializer))
 
 (defn- deserializer [schema->coercion serde-config]
-  (let [{:keys [registry-client registry-config avro-schema key?
+  (let [{:keys [registry-client registry-url avro-schema key?
                 deserializer-properties]} serde-config
-        base-deserializer (KafkaAvroDeserializer. registry-client (merge registry-config deserializer-properties))
+        base-deserializer (KafkaAvroDeserializer. registry-client (let [min-props {"schema.registry.url" registry-url}]
+                                                                    (merge min-props deserializer-properties)))
         methods {:close       (fn [_]
                                 (.close base-deserializer))
                  :configure   (fn [_ base-config key?]
@@ -559,7 +560,7 @@
                                       (log/error e (str msg " for " topic))
                                       (throw (ex-info msg {:topic topic} e))))))}
         clj-deserializer (fn/new-deserializer methods)]
-    (.configure ^Deserializer clj-deserializer registry-config key?)
+    (.configure ^Deserializer clj-deserializer (base-config registry-url) key?)
     clj-deserializer))
 
 ;; Public API
@@ -669,7 +670,7 @@
   [type-registry
    {:keys [avro.schema-registry/client
            avro.schema-registry/url]
-    schema-registry-config :avro.schema-registry/config}
+    :as   registry-config}
    {:keys [avro/schema
            avro/coercion-cache
            key?
@@ -689,9 +690,9 @@
       ":avro/coercion-cache in the schema config must be either absent/nil, or an atom containing a cache")))
 
   (let [config {:key?            key?
-                :registry-config (merge (base-config url) schema-registry-config)
+                :registry-url    url
                 :registry-client (or client
-                                     (registry/client url 128 schema-registry-config))
+                                     (registry/client url 128))
                 ;; Provide the old behavior by default, or fall through to the
                 ;; new behavior of getting the right schema when possible.
                 :read-only?      read-only?
